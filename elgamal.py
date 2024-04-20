@@ -37,7 +37,7 @@ def EGM_encrypt(m, public_key):
 
 ## additive version
 def EGA_encrypt(m, public_key):
-    r = EG_generate_nonce(1, PARAM_P - 2)
+    r = EG_generate_nonce()
     c1 = pow(PARAM_G, r, PARAM_P)
     c2 = pow(PARAM_G, m, PARAM_P) * pow(public_key, r, PARAM_P)
     return (c1, c2)
