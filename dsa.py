@@ -12,30 +12,48 @@ PARAM_G = 0x3FB32C9B73134D0B2E77506660EDBD484CA7B18F21EF205407F4793A1A0BA12510DB
 
 def H(message):
     h = SHA256.new(message)
-    return int(h.hexdigest(), 16)
+    return (int(h.hexdigest(), 16))
 
 def DSA_generate_nonce():
-    return randint(1, PARAM_Q - 1)
+    return randint(1, PARAM_Q - 2)
+
 
 def DSA_generate_keys():
-    x = randint(1, PARAM_Q - 1)
-    y = pow(PARAM_G, x, PARAM_P)
-    return x, y
+    private_key = DSA_generate_nonce()
+    public_key = pow(PARAM_G, private_key, PARAM_P)
+    return (private_key, public_key)
 
-def DSA_sign(message, x, k):
-    r = pow(PARAM_G, k, PARAM_P) % PARAM_Q
-    k_inv = mod_inv(k, PARAM_Q)
+
+def DSA_sign(message, private_key):
+    r = 0
+    s = 0
     h = H(message)
-    s = (k_inv * (h + x * r)) % PARAM_Q
-    return r, s
+    while r == 0 or s == 0:
+        k = DSA_generate_nonce(1, PARAM_Q - 1)
+        r = pow(PARAM_G, k,  PARAM_P) % PARAM_Q
+        s = ((h + private_key * r) * mod_inv(k, PARAM_Q)) % PARAM_Q
+    return (r, s)  
 
-def DSA_verify(message, r, s, y):
-    if r <= 0 or r >= PARAM_Q or s <= 0 or s >= PARAM_Q:
+def DSA_verify(public_key, r, s, message):
+    if (0 >= r or r >= PARAM_Q):
         return False
-    w = mod_inv(s, PARAM_Q)
+    if (0 >= s or s >= PARAM_Q):
+        return False
+    
     h = H(message)
-    u1 = (h * w) % PARAM_Q
-    u2 = (r * w) % PARAM_Q
-    v = ((pow(PARAM_G, u1, PARAM_P) * pow(y, u2, PARAM_P)) % PARAM_P) % PARAM_Q
+    inv_s = mod_inv(s, PARAM_Q)
+    u1 = (h * inv_s) % PARAM_Q
+    u2 = (r  * inv_s) % PARAM_Q
+    v = ((pow(PARAM_G, u1, PARAM_P) * pow(public_key, u2, PARAM_P)) % PARAM_P) % PARAM_Q
     return v == r
 
+def main():
+    m = H(str.encode("An important message !"))
+    x, X = DSA_generate_keys()
+    r, s = DSA_sign(m, x)
+    print("r = ", hex(r))
+    print("s = ", hex(s))
+    print(DSA_verify(X, r, s, m))
+
+if __name__ == "__main__":
+    main()

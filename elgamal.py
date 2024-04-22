@@ -20,28 +20,29 @@ def bruteLog(g, c, p):
             return i + 1
     return -1
 
+def EG_generate_nonce():
+    return randint(1, PARAM_P - 2)
+
 def EG_generate_keys():
-    g = PARAM_G  # générateur
-    p = PARAM_P  # grand nombre premier
-    a = randint(1, p - 2)  # clé privée, choisie aléatoirement
-    A = pow(g, a, p)  # clé publique, g^a % p
-    return (A, a)  # (clé publique, clé privée)
+    private_key = EG_generate_nonce()
+    public_key = pow(PARAM_G, private_key, PARAM_P)
+    return (private_key, public_key)
 
 ## multiplicative version
-def EGM_encrypt(m, A, p=PARAM_P, g=PARAM_G):
-    k = randint(1, p - 2)
-    c1 = pow(g, k, p)  # g^k % p
-    c2 = (m * pow(A, k, p)) % p  # m * A^k % p
+def EGM_encrypt(m, public_key):
+    r = EG_generate_nonce()
+    c1 = pow(PARAM_G, r, PARAM_P)
+    c2 = m * pow(public_key, r, PARAM_P)
     return (c1, c2)
 
 ## additive version
-def EGA_encrypt(m, y):
-    k = randint(1, PARAM_Q - 1)
-    r = pow(PARAM_G, k, PARAM_P)
-    c = (pow(y, k, PARAM_P) * m) % PARAM_P
-    return r, c
+def EGA_encrypt(m, public_key):
+    r = EG_generate_nonce()
+    c1 = pow(PARAM_G, r, PARAM_P)
+    c2 = pow(PARAM_G, m, PARAM_P) * pow(public_key, r, PARAM_P)
+    return (c1, c2)
 
-def EG_decrypt(c1, c2, a, p=PARAM_P):
-    s = mod_inv(pow(c1, a, p), p)  # (c1^a % p)^-1 % p
-    m = (c2 * s) % p
-    return m
+
+def EG_decrypt(private_key, c1, c2):
+    tmp = pow(c1, private_key, PARAM_P)
+    return c2 * mod_inv(tmp, PARAM_P)
