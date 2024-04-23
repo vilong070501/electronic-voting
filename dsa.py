@@ -25,13 +25,17 @@ def DSA_generate_keys():
 
 
 def DSA_sign(message, private_key):
-    r = 0
-    s = 0
     h = H(message)
-    while r == 0 or s == 0:
-        k = DSA_generate_nonce(1, PARAM_Q - 1)
-        r = pow(PARAM_G, k,  PARAM_P) % PARAM_Q
-        s = ((h + private_key * r) * mod_inv(k, PARAM_Q)) % PARAM_Q
+    k = DSA_generate_nonce(1, PARAM_Q - 1)
+
+    r = pow(PARAM_G, k,  PARAM_P) % PARAM_Q
+    if r == 0:
+        return DSA_sign(message, private_key)
+    
+    s = ((h + private_key * r) * mod_inv(k, PARAM_Q)) % PARAM_Q
+    if s == 0:
+        return DSA_sign(message, private_key)
+    
     return (r, s)  
 
 def DSA_verify(public_key, r, s, message):
@@ -46,21 +50,3 @@ def DSA_verify(public_key, r, s, message):
     u2 = (r  * inv_s) % PARAM_Q
     v = ((pow(PARAM_G, u1, PARAM_P) * pow(public_key, u2, PARAM_P)) % PARAM_P) % PARAM_Q
     return v == r
-
-def main():
-    m = H(str.encode("An important message !"))
-    
-    # x = 0x49582493d17932dabd014bb712fc55af453ebfb2767537007b0ccff6e857e6a3
-    # X = pow(PARAM_G, x, PARAM_P)
-    x, X = DSA_generate_keys()
-    r, s = DSA_sign(m, x)
-    # print("r = 0x5ddf26ae653f5583e44259985262c84b483b74be46dec74b07906c5896e26e5a: ",
-    #       r == 0x5ddf26ae653f5583e44259985262c84b483b74be46dec74b07906c5896e26e5a)
-    # print("s = 0x194101d2c55ac599e4a61603bc6667dcc23bd2e9bdbef353ec3cb839dcce6ec1: ",
-    #       s == 0x194101d2c55ac599e4a61603bc6667dcc23bd2e9bdbef353ec3cb839dcce6ec1)
-    print("r = ", hex(r))
-    print("s = ", hex(s))
-    print(DSA_verify(X, r, s, m))
-
-if __name__ == "__main__":
-    main()
