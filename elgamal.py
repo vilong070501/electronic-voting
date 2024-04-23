@@ -32,17 +32,18 @@ def EG_generate_keys():
 def EGM_encrypt(m, public_key):
     r = EG_generate_nonce()
     c1 = pow(PARAM_G, r, PARAM_P)
-    c2 = m * pow(public_key, r, PARAM_P)
+    c2 = (m * pow(public_key, r, PARAM_P)) % PARAM_P
     return (c1, c2)
 
 ## additive version
 def EGA_encrypt(m, public_key):
     r = EG_generate_nonce()
     c1 = pow(PARAM_G, r, PARAM_P)
-    c2 = pow(PARAM_G, m, PARAM_P) * pow(public_key, r, PARAM_P)
+    c2 = (pow(PARAM_G, m, PARAM_P) * pow(public_key, r, PARAM_P)) % PARAM_P
     return (c1, c2)
 
 
 def EG_decrypt(private_key, c1, c2):
     tmp = pow(c1, private_key, PARAM_P)
-    return c2 * mod_inv(tmp, PARAM_P)
+    m = (c2 * mod_inv(tmp, PARAM_P)) % PARAM_P
+    return m

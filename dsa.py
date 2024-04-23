@@ -26,7 +26,7 @@ def DSA_generate_keys():
 
 def DSA_sign(message, private_key):
     h = H(message)
-    k = DSA_generate_nonce(1, PARAM_Q - 1)
+    k = DSA_generate_nonce()
 
     r = pow(PARAM_G, k,  PARAM_P) % PARAM_Q
     if r == 0:
