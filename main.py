@@ -15,6 +15,7 @@ def prompt():
 
 def main():
 
+    # Ask the user to choose the encrypt method and the signature method
     encrypt, sign = prompt()
 
     encrypt_method = 'ElGamal' if encrypt == 1 else 'EC_ElGamal'
@@ -27,28 +28,30 @@ def main():
     for voter, public_sign_key in vote_system.voters:
 
         # Encrypt vote
-        encrypted_vote = vote_system.encrypt_vote(voter.voting())
+        ballot = vote_system.encrypt_vote(voter.voting())
 
-        for ballot in encrypted_vote:
+        # Aggregate vote
+        b = b''
+        for encrypted_message in ballot:
 
-            # Aggregate vote
-            c1, c2 = ballot
+            c1, c2 = encrypted_message
+            
             if vote_system.encrypt_method == 'ElGamal':
-                b = int_to_bytes(c1) + int_to_bytes(c2)
+                b += int_to_bytes(c1) + int_to_bytes(c2)
             elif vote_system.encrypt_method == 'EC_ElGamal':
                 c = add(c1[0], c1[1], c2[0], c2[1], p)
-                b = int_to_bytes(c[0]) + int_to_bytes(c[1])
+                b += int_to_bytes(c[0]) + int_to_bytes(c[1])
 
-            # Voter signs its ballot
-            r, s = voter.sign(b, vote_system.sign_method)
+        # Voter signs its ballot
+        r, s = voter.sign(b, vote_system.sign_method)
 
-            # Verify signature
-            if not(vote_system.verify_vote((r, s), b, public_sign_key)):
-                print("Signature is not verified !!!")
-                exit(1)
+        # Verify signature
+        if not(vote_system.verify_vote((r, s), b, public_sign_key)):
+            print("Signature is not verified !!!")
+            exit(1)
 
         # If all ballots signature have been verified, add the vote to the system
-        vote_system.add_vote(encrypted_vote)
+        vote_system.add_vote(ballot)
     
     # Display the result of the vote
     vote_system.display_result()
