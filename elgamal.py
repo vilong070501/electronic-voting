@@ -43,7 +43,7 @@ def EGA_encrypt(m, public_key):
     return (c1, c2)
 
 
-def EG_decrypt(private_key, c1, c2):
+def EG_decrypt(c1, c2, private_key):
     tmp = pow(c1, private_key, PARAM_P)
     m = (c2 * mod_inv(tmp, PARAM_P)) % PARAM_P
     return m

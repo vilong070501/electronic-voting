@@ -27,20 +27,20 @@ def EG_generate_nonce():
 
 def ECEG_generate_keys():
     private_key = EG_generate_nonce()
-    public_key = mult(private_key, BaseU, BaseV, ORDER)
+    public_key = mult(private_key, BaseU, BaseV, p)
     return (private_key, public_key)
 
 
 def ECEG_encrypt(m, public_key):
     k = EG_generate_nonce()
-    c1 = mult(k, BaseU, BaseV, ORDER)
-    c2 = mult(k, public_key[0], public_key[1], ORDER)
+    c1 = mult(k, BaseU, BaseV, p)
+    c2 = mult(k, public_key[0], public_key[1], p)
     Pm = EGencode(m)
-    return (c1, add(c2[0], c2[1], Pm[0], Pm[1], ORDER))
+    return (c1, add(c2[0], c2[1], Pm[0], Pm[1], p))
 
 
 def ECEG_decrypt(c1, c2, private_key):
-    tmp = mult(private_key, c1[0], c1[1], ORDER)
-    Pm = sub(c2[0], c2[1], tmp[0], tmp[1], ORDER)
-    return bruteECLog(Pm[0], Pm[1], ORDER)
+    tmp = mult(private_key, c1[0], c1[1], p)
+    Pm = sub(c2[0], c2[1], tmp[0], tmp[1], p)
+    return bruteECLog(Pm[0], Pm[1], p)
 
