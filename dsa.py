@@ -38,7 +38,7 @@ def DSA_sign(message, private_key):
     
     return (r, s)  
 
-def DSA_verify(public_key, r, s, message):
+def DSA_verify(message, r, s, public_key):
     if (0 >= r or r >= PARAM_Q):
         return False
     if (0 >= s or s >= PARAM_Q):

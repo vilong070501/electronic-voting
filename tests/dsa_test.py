@@ -14,7 +14,7 @@ class TestDSAVerifyMethod(unittest.TestCase):
         m = str.encode("An important message !")
         x, X = dsa.DSA_generate_keys()
         r, s = dsa.DSA_sign(m, x)
-        self.assertTrue(dsa.DSA_verify(X, r, s, m))
+        self.assertTrue(dsa.DSA_verify(m, r, s, X))
 
 if __name__ == '__main__':
     unittest.main()

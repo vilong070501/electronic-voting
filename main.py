@@ -1,11 +1,28 @@
 from VoteSystem import *
 
+def prompt():
+
+    encrypt, sign = 0, 0
+
+    while (encrypt != 1 and encrypt != 2) or (sign != 1 and sign != 2):
+        print()
+        print("Please choose a method for encryption/decryption of your ballot")
+        encrypt = int(input("\033[96m[1] ElGamal     [2] EC ElGamal \033[00m:   "))
+        print("Please choose a method for signature verification of your ballot")
+        sign = int(input("\033[93m[1] DSA         [2] ECDSA \033[00m:   "))
+
+    return encrypt, sign
+
 def main():
-    vote_system = VoteSystem('ElGamal', 'DSA')
-    # vote_system = VoteSystem('ElGamal', 'ECDSA')
-    # vote_system = VoteSystem('EC_ElGamal', 'DSA')
-    # vote_system = VoteSystem('EC_ElGamal', 'ECDSA')
-    vote_system.display_votes()
+
+    encrypt, sign = prompt()
+
+    encrypt_method = 'ElGamal' if encrypt == 1 else 'EC_ElGamal'
+    sign_method = 'DSA' if sign == 1 else 'ECDSA'
+
+    vote_system = VoteSystem(encrypt_method, sign_method)
+
+    # vote_system.display_votes()
 
     for voter, public_sign_key in vote_system.voters:
         encrypted_vote = vote_system.encrypt_vote(voter.voting())
@@ -25,8 +42,8 @@ def main():
         # If all ballots signature have been verified, add the vote to the system
         vote_system.add_vote(encrypted_vote)
     
-    # Decrypt vote
-    vote_system.decrypt_votes()
+    # Display the result of the vote
+    vote_system.display_result()
         
 
 if __name__ == '__main__':

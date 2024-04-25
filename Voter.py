@@ -1,7 +1,6 @@
 import random
 from dsa import DSA_sign
 from ecdsa import ECDSA_sign
-from algebra import int_to_bytes
 
 class Voter:
 

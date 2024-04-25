@@ -5,16 +5,16 @@ from ecelgamal import *
 
 from Voter import *
 
-p = 2**255 - 19
-ORDER = (2**252 + 27742317777372353535851937790883648493)
+NB_CANDIDATES = 5
+NB_VOTERS = 10
 
 class VoteSystem:
 
     ## Constructor
     def __init__(self, encrypt_method='ElGamal', sign_method='DSA'):
 
-        self.candidates = [ None ] * 5
-        self.voters = [ None ] * 10
+        self.candidates = [ None ] * NB_CANDIDATES
+        self.voters = [ None ] * NB_VOTERS
 
         self.encrypt_method = encrypt_method
         self.sign_method = sign_method
@@ -30,9 +30,9 @@ class VoteSystem:
 
         # Generate key pair for signature for each voter
         if sign_method == 'DSA':
-            sign_keys = [DSA_generate_keys() for _ in range(10)]
+            sign_keys = [DSA_generate_keys() for _ in range(NB_VOTERS)]
         elif sign_method == 'ECDSA':
-            sign_keys = [ECDSA_generate_keys() for _ in range(10)]
+            sign_keys = [ECDSA_generate_keys() for _ in range(NB_VOTERS)]
 
         # Create voters
         for i in range(10):
@@ -54,12 +54,13 @@ class VoteSystem:
     def verify_vote(self, signature, encrypted_vote, public_sign_key):
         r, s = signature
         if self.sign_method == 'DSA':
-            return DSA_verify(public_sign_key, r, s, encrypted_vote)
+            return DSA_verify(encrypted_vote, r, s, public_sign_key)
         elif self.sign_method == 'ECDSA':
             return ECDSA_verify(encrypted_vote, r, s, public_sign_key)
         
+    ## Add the vote to the system
     def add_vote(self, vote):
-        for i in range(5):
+        for i in range(NB_CANDIDATES):
             
             if self.candidates[i] == None:
                 self.candidates[i] = (vote[i][0], vote[i][1])
@@ -75,21 +76,40 @@ class VoteSystem:
 
                 self.candidates[i] = (c1, c2)
                 
-
+    ## Decrypt and count votes
     def decrypt_votes(self):
-        winner, votes = 0, 0
-        for i in range(5):
+        nb_votes = [ 0 ] * NB_CANDIDATES
+        for i in range(NB_CANDIDATES):
             if self.encrypt_method == 'ElGamal':
                 gm = EG_decrypt(self.candidates[i][0], self.candidates[i][1], self.private_key)
-                result = bruteLog(PARAM_G, gm, PARAM_P)
+                nb_votes[i] = bruteLog(PARAM_G, gm, PARAM_P)
             elif self.encrypt_method == 'EC_ElGamal':
-                result = ECEG_decrypt(self.candidates[i][0], self.candidates[i][1], self.private_key)
+                nb_votes[i] = ECEG_decrypt(self.candidates[i][0], self.candidates[i][1], self.private_key)
             
-            if result > votes:
+        return nb_votes
+    
+    ## Display the result of the vote
+    def display_result(self):
+
+        print()
+
+        nb_votes = self.decrypt_votes()
+
+        winner, votes = 0, 0
+        for i in range(NB_CANDIDATES):
+            if nb_votes[i] > votes:
                 winner = i + 1
-                votes = result
-            print("Candidate %d has %d votes" % (i + 1, result))
+                votes = nb_votes[i]
+            print("Candidate %d has %d votes" % (i + 1, nb_votes[i]))
+
         
-        print("The candidate %d has winned the election with %d votes" % (winner, votes))
+        print()
+
+        if all(x == nb_votes[0] for x in nb_votes):
+            print("\033[92mThe result of the vote is a tie! Please start a new vote!\033[00m")
+        else:
+            print("\033[92mCongratulations, the candidate \033[91m%d\033[0m \033[92mhas winned the election with \033[91m%d\033[0m \033[92mvotes !!!\033[00m" % (winner, votes))
+        
+        print()
             
 

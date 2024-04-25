@@ -29,17 +29,17 @@ def EG_generate_keys():
     return (private_key, public_key)
 
 ## multiplicative version
-def EGM_encrypt(m, public_key):
+def EGM_encrypt(message, public_key):
     r = EG_generate_nonce()
     c1 = pow(PARAM_G, r, PARAM_P)
-    c2 = (m * pow(public_key, r, PARAM_P)) % PARAM_P
+    c2 = (message * pow(public_key, r, PARAM_P)) % PARAM_P
     return (c1, c2)
 
 ## additive version
-def EGA_encrypt(m, public_key):
+def EGA_encrypt(message, public_key):
     r = EG_generate_nonce()
     c1 = pow(PARAM_G, r, PARAM_P)
-    c2 = (pow(PARAM_G, m, PARAM_P) * pow(public_key, r, PARAM_P)) % PARAM_P
+    c2 = (pow(PARAM_G, message, PARAM_P) * pow(public_key, r, PARAM_P)) % PARAM_P
     return (c1, c2)
 
 
